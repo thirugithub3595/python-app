@@ -1,0 +1,50 @@
+pipeline {
+
+    agent any
+
+
+    stages {
+
+
+        stage('Checkout') {
+
+            steps {
+
+                git branch: 'main',
+                url: 'https://github.com/thirugithub3595/python-app.git'
+
+            }
+        }
+
+
+        stage('Build Docker Image') {
+
+            steps {
+
+                sh '''
+                docker build -t employee-app:v1 .
+                '''
+
+            }
+        }
+
+
+        stage('Run Container') {
+
+            steps {
+
+                sh '''
+                docker stop employee-container || true
+                docker rm employee-container || true
+
+                docker run -d \
+                -p 5000:5000 \
+                --name employee-container \
+                employee-app:v1
+                '''
+
+            }
+        }
+
+    }
+}
