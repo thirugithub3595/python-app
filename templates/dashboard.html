@@ -1,0 +1,177 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Employee Dashboard</title>
+
+    <style>
+
+            .logout{
+
+background:red;
+color:white;
+padding:10px 20px;
+border-radius:5px;
+float:right;
+text-decoration:none;
+
+}
+
+.logout:hover{
+
+background:darkred;
+
+}
+
+
+            a{
+
+text-decoration:none;
+padding:6px 12px;
+border-radius:5px;
+color:white;
+
+}
+
+a[href*="edit"]{
+
+background:orange;
+
+}
+
+a[href*="delete"]{
+
+background:red;
+
+}                      
+
+
+           input{
+
+width:300px;
+padding:10px;
+border-radius:5px;
+border:1px solid gray;
+
+}
+
+button{
+
+padding:10px 20px;
+background:#28a745;
+color:white;
+border:none;
+border-radius:5px;
+cursor:pointer;
+
+}
+
+button:hover{
+
+background:#218838;
+
+}
+
+        body{
+            font-family:Arial;
+            background:#f2f5f9;
+            margin:0;
+        }
+
+        .container{
+            width:80%;
+            margin:auto;
+            margin-top:40px;
+        }
+
+        h1{
+            color:#2c3e50;
+        }
+
+        table{
+            width:100%;
+            border-collapse:collapse;
+            background:white;
+        }
+
+        th{
+            background:#007BFF;
+            color:white;
+            padding:12px;
+        }
+
+        td{
+            padding:12px;
+            border:1px solid #ddd;
+        }
+
+        tr:nth-child(even){
+            background:#f8f8f8;
+        }
+
+    </style>
+
+</head>
+
+<body>
+
+<div class="container">
+
+<h1>Employee Dashboard</h1>
+
+<h3>Welcome {{username}}</h3>
+	
+<a href="/" class="logout">Logout</a>
+
+<h2>Add Employee</h2>
+
+<h3>Total Employees : {{employees|length}}</h3>
+
+<form action="/add" method="POST">
+
+<input
+type="text"
+name="name"
+placeholder="Enter Employee Name"
+required>
+
+<button type="submit">
+Add Employee
+</button>
+
+</form>
+
+<br>
+<table>
+
+<tr>
+<th>ID</th>
+<th>Name</th>
+<th>Actions</th>
+</tr>
+
+{% for emp in employees %}
+
+
+<tr>
+
+<td>{{emp[0]}}</td>
+
+<td>{{emp[1]}}</td>
+
+<td>
+
+<a href="/edit/{{emp[0]}}">✏ Edit</a>
+
+<a href="/delete/{{emp[0]}}">🗑 Delete</a>
+
+</td>
+
+
+{% endfor %}
+
+</table>
+
+</div>
+
+</body>
+</html>
