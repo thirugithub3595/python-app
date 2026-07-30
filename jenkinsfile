@@ -2,49 +2,41 @@ pipeline {
 
     agent any
 
-
     stages {
 
-
         stage('Checkout') {
-
             steps {
-
                 git branch: 'main',
-                url: 'https://github.com/thirugithub3595/python-app.git'
-
+                    url: 'https://github.com/thirugithub3595/python-app.git'
             }
         }
 
-
-        stage('Build Docker Image') {
-
+        stage('Build and deploy with Docker Compose') {
             steps {
-
                 sh '''
-                docker build -t employee-app:v1 .
+                docker compose down || true
+                docker compose up --build -d
                 '''
-
             }
         }
 
-
-        stage('Run Container') {
-
+        stage('Verify deployment') {
             steps {
-
                 sh '''
-                docker stop employee-container || true
-                docker rm employee-container || true
-
-                docker run -d \
-                -p 5000:5000 \
-                --name employee-container \
-                employee-app:v1
+                docker ps
+                curl -f http://localhost:5000
                 '''
-
             }
         }
 
+    }
+
+    post {
+        success {
+            echo 'Application deployed successfully'
+        }
+        failure {
+            echo 'Deployment failed'
+        }
     }
 }
