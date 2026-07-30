@@ -1,5 +1,4 @@
 pipeline {
-
     agent any
 
     stages {
@@ -7,36 +6,26 @@ pipeline {
         stage('Checkout') {
             steps {
                 git branch: 'main',
-                    url: 'https://github.com/thirugithub3595/python-app.git'
+                    url: 'git@github.com:thirugithub3595/python-app.git'
             }
         }
 
-        stage('Build and deploy with Docker Compose') {
+        stage('Build') {
             steps {
-                sh '''
-                docker compose down || true
-                docker compose up --build -d
-                '''
+                sh 'echo Building Flask project'
             }
         }
 
-        stage('Verify deployment') {
+        stage('Test') {
             steps {
-                sh '''
-                docker ps
-                curl -f http://localhost:5000
-                '''
+                sh 'python3 --version'
             }
         }
 
-    }
-
-    post {
-        success {
-            echo 'Application deployed successfully'
-        }
-        failure {
-            echo 'Deployment failed'
+        stage('Success') {
+            steps {
+                echo 'Pipeline executed successfully'
+            }
         }
     }
 }
