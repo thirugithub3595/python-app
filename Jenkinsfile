@@ -3,22 +3,16 @@ pipeline {
 
     stages {
 
-        stage('Checkout') {
-            steps {
-                git branch: 'main',
-                    url: 'git@github.com:thirugithub3595/python-app.git'
-            }
-        }
-
         stage('Build') {
             steps {
-                sh 'echo Building Flask project'
+                sh 'echo Building Flask application'
             }
         }
 
         stage('Test') {
             steps {
                 sh 'python3 --version'
+                sh 'echo Running tests'
             }
         }
 
@@ -26,6 +20,20 @@ pipeline {
             steps {
                 echo 'Pipeline executed successfully'
             }
+        }
+    }
+
+    post {
+        always {
+            echo 'Pipeline finished'
+        }
+
+        success {
+            echo 'Build succeeded'
+        }
+
+        failure {
+            echo 'Build failed'
         }
     }
 }
