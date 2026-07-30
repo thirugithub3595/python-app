@@ -1,39 +1,32 @@
 pipeline {
     agent any
 
+    environment {
+        IMAGE_NAME = 'thiruvenkadam/python-app'
+        IMAGE_TAG = 'v1'
+    }
+
     stages {
 
-        stage('Build') {
+        stage('Build Docker Image') {
             steps {
-                sh 'echo Building Flask application'
+                sh 'docker build -t ${IMAGE_NAME}:${IMAGE_TAG} .'
             }
         }
 
-        stage('Test') {
+        stage('Verify Image') {
             steps {
-                sh 'python3 --version'
-                sh 'echo Running tests'
-            }
-        }
-
-        stage('Success') {
-            steps {
-                echo 'Pipeline executed successfully'
+                sh 'docker images | grep python-app'
             }
         }
     }
 
     post {
-        always {
-            echo 'Pipeline finished'
-        }
-
         success {
-            echo 'Build succeeded'
+            echo 'Docker image built successfully'
         }
-
         failure {
-            echo 'Build failed'
+            echo 'Docker build failed'
         }
     }
 }
