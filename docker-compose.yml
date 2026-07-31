@@ -1,17 +1,5 @@
 services:
 
-  flask:
-    build: .
-    container_name: flask-app
-
-    ports:
-      - "5000:5000"
-
-    restart: unless-stopped
-
-    depends_on:
-      - mysql
-
   mysql:
     image: mysql:latest
     container_name: mysql-db
@@ -25,5 +13,34 @@ services:
 
     restart: unless-stopped
 
+    networks:
+      - app-network
+
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  flask:
+    build: .
+    container_name: flask-app
+
+    ports:
+      - "5000:5000"
+
+    restart: unless-stopped
+
+    depends_on:
+      mysql:
+        condition: service_healthy
+
+    networks:
+      - app-network
+
 volumes:
   mysql-data:
+
+networks:
+  app-network:
+    driver: bridge

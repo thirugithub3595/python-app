@@ -5,7 +5,7 @@ app = Flask(__name__)
 
 def get_connection():
     return pymysql.connect(
-        host="mysql",
+        host="mysql-db",
         user="root",
         password="root123",
         database="flaskdb"
@@ -57,7 +57,7 @@ def login():
         if user:
 
             # Get all employees
-            cursor.execute("SELECT * FROM employees")
+            cursor.execute("SELECT * FROM users")
             employees = cursor.fetchall()
 
             cursor.close()
@@ -87,7 +87,7 @@ def add_employee():
     cursor = conn.cursor()
 
     cursor.execute(
-        "INSERT INTO employees(name) VALUES(%s)",
+        "INSERT INTO users(username) VALUES(%s)",
         (name,)
     )
 
@@ -106,7 +106,7 @@ def delete(id):
     cursor = conn.cursor()
 
     cursor.execute(
-        "DELETE FROM employees WHERE id=%s",
+        "DELETE FROM users WHERE id=%s",
         (id,)
     )
 
@@ -124,7 +124,7 @@ def edit(id):
     cursor = conn.cursor()
 
     cursor.execute(
-        "SELECT * FROM employees WHERE id=%s",
+        "SELECT * FROM users WHERE id=%s",
         (id,)
     )
 
@@ -148,7 +148,7 @@ def update(id):
     cursor = conn.cursor()
 
     cursor.execute(
-        "UPDATE employees SET name=%s WHERE id=%s",
+        "UPDATE users SET username=%s WHERE id=%s",
         (name, id)
     )
 
