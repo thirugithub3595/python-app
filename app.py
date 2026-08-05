@@ -3,128 +3,151 @@ import pymysql
 
 app = Flask(__name__)
 
+
 def get_connection():
     return pymysql.connect(
-        host="mysql-db",
-        user="root",
-        password="root123",
-        database="flaskdb"
+        host='mysql-db',
+        user='root',
+        password='root123',
+        database='flaskdb'
     )
 
-@app.route("/")
-def index():
-    return render_template("login.html")
 
+def create_tables():
+    conn = get_connection()
+    cursor = conn.cursor()
 
-@app.route("/login", methods=["POST"])
-def login():
-
-    username = request.form["username"]
-    password = request.form["password"]
-
-    try:
-        conn = get_connection()
-        cursor = conn.cursor()
-
-        # Create users table
-        cursor.execute("""
-        CREATE TABLE IF NOT EXISTS users(
+    # Users table for login
+    cursor.execute('''
+        CREATE TABLE IF NOT EXISTS users (
             id INT AUTO_INCREMENT PRIMARY KEY,
-            username VARCHAR(100),
+            username VARCHAR(100) UNIQUE,
             password VARCHAR(100)
         )
-        """)
+    ''')
 
-        # Insert default user if table is empty
-        cursor.execute("SELECT COUNT(*) FROM users")
-        count = cursor.fetchone()[0]
+    # Employees table
+    cursor.execute('''
+        CREATE TABLE IF NOT EXISTS employees (
+            id INT AUTO_INCREMENT PRIMARY KEY,
+            name VARCHAR(100)
+        )
+    ''')
 
-        if count == 0:
-            cursor.execute("""
-            INSERT INTO users(username,password)
-            VALUES('admin','admin123')
-            """)
-            conn.commit()
+    # Insert default admin user if it doesn't exist
+    cursor.execute('SELECT * FROM users WHERE username=%s', ('admin',))
+    admin = cursor.fetchone()
 
-        # Check login
+    if not admin:
         cursor.execute(
-            "SELECT * FROM users WHERE username=%s AND password=%s",
-            (username, password)
+            'INSERT INTO users(username, password) VALUES(%s, %s)',
+            ('admin', 'admin123')
         )
 
-        user = cursor.fetchone()
-
-        if user:
-
-            # Get all employees
-            cursor.execute("SELECT * FROM users")
-            employees = cursor.fetchall()
-
-            cursor.close()
-            conn.close()
-
-            return render_template(
-                "dashboard.html",
-                username=username,
-                employees=employees
-            )
-
-        else:
-            cursor.close()
-            conn.close()
-            return "<h2>Invalid Username or Password</h2>"
-
-    except Exception as e:
-        return str(e)
+    conn.commit()
+    cursor.close()
+    conn.close()
 
 
-@app.route("/add", methods=["POST"])
+@app.route('/')
+def index():
+    return render_template('login.html')
+
+
+
+@app.route('/login', methods=['POST'])
+def login():
+username = request.form['username'].strip()
+password = request.form['password'].strip()
+
+```
+try:
+    conn = get_connection()
+    cursor = conn.cursor()
+
+    cursor.execute(
+        'SELECT id, username FROM users WHERE username=%s AND password=%s',
+        (username, password)
+    )
+
+    user = cursor.fetchone()
+    print('LOGIN DEBUG:', username, password, user)
+
+    cursor.close()
+    conn.close()
+
+    if user:
+        return redirect('/login-success')
+
+    return '<h2>Invalid Username or Password</h2>'
+
+except Exception as e:
+    return str(e)
+```
+
+
+
+@app.route('/add', methods=['POST'])
 def add_employee():
-
-    name = request.form["name"]
+    name = request.form['name']
 
     conn = get_connection()
     cursor = conn.cursor()
 
     cursor.execute(
-        "INSERT INTO users(username) VALUES(%s)",
+        'INSERT INTO employees(name) VALUES(%s)',
         (name,)
     )
 
     conn.commit()
+    cursor.close()
+    conn.close()
+
+    return redirect('/login-success')
+
+
+@app.route('/login-success')
+def login_success():
+    conn = get_connection()
+    cursor = conn.cursor()
+
+    cursor.execute('SELECT id, name FROM employees')
+    employees = cursor.fetchall()
 
     cursor.close()
     conn.close()
 
-    return redirect("/")
+    return render_template(
+        'dashboard.html',
+        username='admin',
+        employees=employees
+    )
 
 
-@app.route("/delete/<int:id>")
+@app.route('/delete/<int:id>')
 def delete(id):
-
     conn = get_connection()
     cursor = conn.cursor()
 
     cursor.execute(
-        "DELETE FROM users WHERE id=%s",
+        'DELETE FROM employees WHERE id=%s',
         (id,)
     )
 
     conn.commit()
-
     cursor.close()
     conn.close()
 
-    return redirect("/")
+    return redirect('/login-success')
 
-@app.route("/edit/<int:id>")
+
+@app.route('/edit/<int:id>')
 def edit(id):
-
     conn = get_connection()
     cursor = conn.cursor()
 
     cursor.execute(
-        "SELECT * FROM users WHERE id=%s",
+        'SELECT id, name FROM employees WHERE id=%s',
         (id,)
     )
 
@@ -134,31 +157,30 @@ def edit(id):
     conn.close()
 
     return render_template(
-        "edit.html",
+        'edit.html',
         employee=employee
     )
 
 
-@app.route("/update/<int:id>", methods=["POST"])
+@app.route('/update/<int:id>', methods=['POST'])
 def update(id):
-
-    name = request.form["name"]
+    name = request.form['name']
 
     conn = get_connection()
     cursor = conn.cursor()
 
     cursor.execute(
-        "UPDATE users SET username=%s WHERE id=%s",
+        'UPDATE employees SET name=%s WHERE id=%s',
         (name, id)
     )
 
     conn.commit()
-
     cursor.close()
     conn.close()
 
-    return redirect("/")
+    return redirect('/login-success')
 
-if __name__ == "__main__":
-    app.run(host="0.0.0.0", port=5000)
 
+if __name__ == '__main__':
+    create_tables()
+    app.run(host='0.0.0.0', port=5000)
