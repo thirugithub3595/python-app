@@ -35,7 +35,11 @@ def create_tables():
     ''')
 
     # Insert default admin user if it doesn't exist
-    cursor.execute('SELECT * FROM users WHERE username=%s', ('admin',))
+    cursor.execute(
+        'SELECT * FROM users WHERE username=%s',
+        ('admin',)
+    )
+
     admin = cursor.fetchone()
 
     if not admin:
@@ -54,37 +58,33 @@ def index():
     return render_template('login.html')
 
 
-
 @app.route('/login', methods=['POST'])
 def login():
-username = request.form['username'].strip()
-password = request.form['password'].strip()
+    username = request.form['username'].strip()
+    password = request.form['password'].strip()
 
-```
-try:
-    conn = get_connection()
-    cursor = conn.cursor()
+    try:
+        conn = get_connection()
+        cursor = conn.cursor()
 
-    cursor.execute(
-        'SELECT id, username FROM users WHERE username=%s AND password=%s',
-        (username, password)
-    )
+        cursor.execute(
+            'SELECT id, username FROM users WHERE username=%s AND password=%s',
+            (username, password)
+        )
 
-    user = cursor.fetchone()
-    print('LOGIN DEBUG:', username, password, user)
+        user = cursor.fetchone()
+        print('LOGIN DEBUG:', username, password, user)
 
-    cursor.close()
-    conn.close()
+        cursor.close()
+        conn.close()
 
-    if user:
-        return redirect('/login-success')
+        if user:
+            return redirect('/login-success')
 
-    return '<h2>Invalid Username or Password</h2>'
+        return '<h2>Invalid Username or Password</h2>'
 
-except Exception as e:
-    return str(e)
-```
-
+    except Exception as e:
+        return str(e)
 
 
 @app.route('/add', methods=['POST'])
