@@ -4,6 +4,7 @@ agent any
 environment {
     IMAGE_NAME = 'thiruvenkadam/python-app'
     IMAGE_TAG = "${BUILD_NUMBER}"
+    CONTAINER_NAME = 'flask-app'
 }
 
 stages {
@@ -16,9 +17,11 @@ stages {
 
     stage('Verify environment') {
         steps {
-            sh 'git --version'
-            sh 'docker --version'
-            sh 'python3 --version'
+            sh '''
+            git --version
+            docker --version
+            python3 --version
+            '''
         }
     }
 
@@ -75,8 +78,20 @@ stages {
     stage('Deploy') {
         steps {
             sh '''
-            docker compose down || true
-            docker compose up --build -d
+            echo "Stopping old container if it exists..."
+
+            docker stop ${CONTAINER_NAME} || true
+            docker rm ${CONTAINER_NAME} || true
+
+            echo "Running new container..."
+
+            docker run -d \
+                --name ${CONTAINER_NAME} \
+                -p 5000:5000 \
+                --restart unless-stopped \
+                ${IMAGE_NAME}:latest
+
+            docker ps
             '''
         }
     }
@@ -84,15 +99,20 @@ stages {
     stage('Health check') {
         steps {
             sh '''
-            for i in {1..10}; do
-                if curl -f http://localhost:5000; then
+            echo "Checking application health..."
+
+            for i in {1..15}; do
+                if curl -fs http://localhost:5000 > /dev/null; then
                     echo "Application is healthy"
                     exit 0
                 fi
-                echo "Waiting for application..."
+
+                echo "Waiting for application... ($i/15)"
                 sleep 3
             done
+
             echo "Health check failed"
+            docker logs ${CONTAINER_NAME} || true
             exit 1
             '''
         }
@@ -110,6 +130,10 @@ post {
     }
 
     failure {
+        sh 'docker ps -a || true'
+        sh 'docker logs ${CONTAINER_NAME} || true'
         echo 'Pipeline failed'
     }
+}
+
 }
