@@ -78,18 +78,10 @@ stages {
     stage('Deploy') {
         steps {
             sh '''
-            echo "Stopping old container if it exists..."
+            echo "Deploying application with Docker Compose..."
 
-            docker stop ${CONTAINER_NAME} || true
-            docker rm ${CONTAINER_NAME} || true
-
-            echo "Running new container..."
-
-            docker run -d \
-                --name ${CONTAINER_NAME} \
-                -p 5000:5000 \
-                --restart unless-stopped \
-                ${IMAGE_NAME}:latest
+            docker compose down || true
+            docker compose up -d --build
 
             docker ps
             '''
