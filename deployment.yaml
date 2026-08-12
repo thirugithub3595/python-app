@@ -19,6 +19,6 @@ spec:
     spec:
       containers:
       - name: python-app
-        image: thiruvenkadam/python-app:latest
+        image: thiruvenkadam/python-app:1
         ports:
         - containerPort: 5000

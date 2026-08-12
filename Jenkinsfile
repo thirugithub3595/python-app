@@ -46,8 +46,8 @@ pipeline {
         stage('Deploy to Kubernetes') {
             steps {
                 sh '''
-                kubectl apply -f deployment.yaml
-		kubectl apply -f service.yaml
+                kubectl set image deployment/python-app \
+		    python-app=${IMAGE_NAME}:${IMAGE_TAG}
                 kubectl rollout status deployment/python-app
                 '''
             }
